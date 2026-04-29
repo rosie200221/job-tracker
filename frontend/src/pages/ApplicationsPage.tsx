@@ -1,26 +1,11 @@
 import {useEffect, useState} from "react"
-
-
-type ApplicationStatus = 
-  | "APPLIED"
-  | "INTERVIEW"
-  | "OFFER"
-  | "REJECTED"
-  | "GHOSTED";
+import type {Application, ApplicationStatus} from "../types/application"
+import { APPLICATION_STATUSES } from "../types/application"
+import { Link } from "react-router"
 
 
 
-type Application = {
-    id: string, 
-    companyName: string
-    roleTitle: string
-    location: string | null
-    status: ApplicationStatus 
-    appliedDate: string | null 
-    notes: string | null
-    createdAt: string
-    updatedAt: string
-}
+
 
 function getStatusStyle(status: ApplicationStatus){
     switch(status) {
@@ -123,6 +108,40 @@ function ApplicationsPage() {
     }, [])
 
 
+    async function handleStatusChange(id: string, newStatus: ApplicationStatus){
+
+        try{
+            const response = await fetch(`http://localhost:4000/api/applications/${id}` , {
+                method: "PATCH",
+                headers: {
+                    "Content-Type" : "application/json"
+                },
+                body: JSON.stringify({
+                    status: newStatus,
+                })
+            })
+
+            if (!response.ok){
+                throw new Error("Failed to update Status")
+            }
+
+            const updatedApplication: Application = await response.json()
+
+            setApplications((prevApplications) => 
+                prevApplications.map((application) => 
+
+                    application.id === id ? updatedApplication : application
+                
+                )
+            )
+        } catch(error) {
+            console.error(error)
+            setError("Could not updated application status.")
+        }
+
+    }
+
+
     return(
 
         <div> 
@@ -141,6 +160,8 @@ function ApplicationsPage() {
                 </p>
             </div>
 
+
+            <Link to="/applications/new">
             <button
                 style={{
                     border: "none",
@@ -152,6 +173,7 @@ function ApplicationsPage() {
                 }}>
                     Add Application
                 </button>
+                </Link>
             </div>
 
             {loading ? (
@@ -240,17 +262,40 @@ function ApplicationsPage() {
 
 
                                         <td style={{padding: "14px 16px", fontWeight:600}}>
-                                            <span
+
+                                            <div
                                                 style={{
                                                     ...getStatusStyle(application.status),
-                                                    padding: "6px 10px",
+                                                    borderRadius: "999px",
+                                                    padding: "2px",
+                                                    display: "inline-block"
+                                                }}
+                                            
+                                            >
+
+                                                <select 
+                                                value={application.status}
+                                                onChange={(e) => 
+                                                    handleStatusChange(application.id, e.target.value as ApplicationStatus)
+                                                }
+                                                style={{
+                                                    ...getStatusStyle(application.status),
+                                                    padding: "8px 10px",
                                                     borderRadius: "999px",
                                                     fontSize: "14px",
-                                                    fontWeight: 600,
-                                                    display: "inline-block"
+                                                    fontWeight: 600, 
+                                                    border: "none",
+                                                    cursor: "pointer" ,
+                                                    
                                                 }}>
-                                                    {application.status}
-                                                </span>
+                                                    {APPLICATION_STATUSES.map((status) => (
+                                                        <option key={status} value={status}>
+                                                            {status}
+                                                        </option>
+                                                    ))}
+                                                    
+                                                </select>
+                                            </div>
                                         </td>
 
                                         <td style={{padding: "14px 16px", fontWeight:600}}>

@@ -3,7 +3,7 @@ import AppLayout from "../app/AppLayout";
 import DashboardPage from "../pages/DashboardPage";
 import ApplicationsPage from "../pages/ApplicationsPage";
 import NewApplicationPage from "../pages/NewApplicationPage";
-import EmailImportPage from "../pages/EmailImportpage";
+import EmailImportPage from "../pages/EmailImportPage"
 function App() {
 
     return(
